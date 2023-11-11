@@ -3,10 +3,10 @@ const brypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const login = async (req, res) => {
 
+try{
     const {email,password}=req.body
-
     if(!email || !password){
-        return res.ststus(400).json({message:'Пожалуйста заполните обязательные поля'})
+        return res.status(400).json({message:'Пожалуйста заполните обязательные поля'})
     }
     const user=await prisma.user.findFirst({
         where:{
@@ -33,56 +33,68 @@ const login = async (req, res) => {
             message:'Неверно веден логин или пароль'
         })
     }
+}catch{
+    return res.status(400).json({
+        message:'Что то пошло не так '
+    })
 }
+}
+
 
 const register = async (req, res) =>{
-   const {email,password,name}=req.body
-if(!email || !password || !name){
-return res.status(400).json({
-    message:'Пожалуйста заполните обязательные поля'
-})
-}
-const registeredUser=await prisma.user.findFirst({
-    where:{
-        email
-    }
-})
-if(registeredUser){
+    try{
+        const {email,password,name}=req.body
+    if(!email || !password || !name){
     return res.status(400).json({
-        message:'Такой пользователь уже существует'
+        message:'Пожалуйста заполните обязательные поля'
     })
-}
-
-const salt=await brypt.genSalt(10)
-const hashedPassword=await brypt.hash(password,salt)
-const user=await prisma.user.create({
-    data:{
-        email,
-        name,
-        password:hashedPassword
     }
-})
-const secret=process.env.JWT_SECRET
-
-if(user && secret){
-    res.status(201).json({
-        id:user.id,
-        email:user.email,
-        name,
-        token:jwt.sign({
-            id:user.id
-        },secret,{
-            expiresIn:'30d'
+    const registeredUser=await prisma.user.findFirst({
+        where:{
+            email
+        }
+    })
+    if(registeredUser){
+        return res.status(400).json({
+            message:'Такой пользователь уже существует'
         })
+    }
+    
+    const salt=await brypt.genSalt(10)
+    const hashedPassword=await brypt.hash(password,salt)
+    const user=await prisma.user.create({
+        data:{
+            email,
+            name,
+            password:hashedPassword
+        }
     })
-}else{
-    return res.status(400).json({
-        message:'Не удалось создать пользователя'
-    })
+    const secret=process.env.JWT_SECRET
+    
+    if(user && secret){
+        res.status(201).json({
+            id:user.id,
+            email:user.email,
+            name,
+            token:jwt.sign({
+                id:user.id
+            },secret,{
+                expiresIn:'30d'
+            })
+        })
+    }else{
+        return res.status(400).json({
+            message:'Не удалось создать пользователя'
+        })
+    }}catch{
+        return res.status(500).json({
+            message:'Что то пошло не так '
+        })
+    }
 }
-}
+
 const current=async (req, res)=> { 
-    res.send('current');
+    return res.status(200).json(req.user)
 }
 module.exports={
     login,
