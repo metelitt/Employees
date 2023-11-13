@@ -12,12 +12,15 @@ const auth = async (req, res, next) => {
         id: decoded.id,
       },
     });
+    
     req.user = user;
+
     next();
   } catch (error) {
-    res.status(401).json({message:"Не авторизован"})
+    res.status(401).json({ message: 'Не авторизован' });
   }
 };
+
 module.exports = {
   auth,
 };
