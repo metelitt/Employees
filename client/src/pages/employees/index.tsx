@@ -9,7 +9,7 @@ import { Employee } from '@prisma/client'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../path'
 import { useSelector } from 'react-redux'
-import { selectorUser } from '../../features/auth/authSlice'
+import { selectUser } from '../../features/auth/authSlice'
 import {useEffect} from 'react'
 const columns:ColumnsType<Employee> =[
   {
@@ -31,7 +31,7 @@ const columns:ColumnsType<Employee> =[
 
 export const Employees = () => {
   const navigate=useNavigate()
-  const user = useSelector(selectorUser)
+  const user = useSelector(selectUser)
   const {data,isLoading}=useGetAllEmployeesQuery()
 
 useEffect(()=>{
@@ -40,9 +40,11 @@ useEffect(()=>{
   }
 },[navigate,user])
 
+const goToAddUser=()=>navigate(Paths.employeeAdd)
+
   return (
     <Layout>
-      <CustomButton type='primary' onClick={()=>null} icon={<PlusCircleOutlined/>}>
+      <CustomButton type='primary' onClick={goToAddUser} icon={<PlusCircleOutlined/>}>
         Добавить
       </CustomButton>
       <Table
